@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Radar Signal Analysis</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Radar Signal Analysis</h1>
+        <form id="signalForm">
+            <label for="frequency">Frequency:</label>
+            <input type="number" id="frequency" name="frequency" step="0.1" required>
+            
+            <label for="pulse_width">Pulse Width:</label>
+            <input type="number" id="pulse_width" name="pulse_width" step="0.1" required>
+            
+            <button type="submit">Generate Signal</button>
+        </form>
+        <div id="results"></div>
+        <div id="waveform"></div>
+    </div>
+
+    <script>
+        document.getElementById('signalForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const frequency = document.getElementById('frequency').value;
+            const pulseWidth = document.getElementById('pulse_width').value;
+
+            fetch('/generate_signal', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    frequency: frequency,
+                    pulse_width: pulseWidth
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const targets = data.targets.map(target => `Distance: ${target.distance.toFixed(2)} m, Velocity: ${target.velocity.toFixed(2)} m/s`).join('<br>');
+                document.getElementById('results').innerHTML = `<strong>Targets Detected:</strong><br>${targets}`;
+                document.getElementById('waveform').innerHTML = `<strong>Generated Waveform:</strong><pre>${data.waveform}</pre>`;
+            });
+        });
+    </script>
+</body>
+</html>
